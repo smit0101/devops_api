@@ -38,9 +38,9 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll() // Allow login/register
-                .requestMatchers("/ws/**").permitAll()       // Allow WebSocket handshake (custom auth logic later if needed)
-                .requestMatchers("/api/webhooks/**").permitAll() // Allow Webhooks (they have their own signature check)
+                .requestMatchers("/api/auth/login", "/api/auth/register", "/ws/**", "/api/webhooks/**").permitAll()
+                .requestMatchers("/api/auth/change-password").authenticated()
+                .requestMatchers("/api/settings/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -73,9 +73,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:8081", "http://127.0.0.1:8081", "app://.")); // Adjust for mobile/desktop if needed
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowedHeaders(Arrays.asList("*")); // Allow all headers for now to debug
         configuration.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
